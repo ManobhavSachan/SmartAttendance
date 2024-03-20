@@ -12,6 +12,7 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 # Assuming known_face_encodings and known_face_names are loaded somewhere
+
 folder_path = "C:/Users/DELL/Downloads/GitHub Photos/Single Photo"
 known_face_encodings = []
 known_face_names = []
@@ -25,7 +26,7 @@ for filename in os.listdir(folder_path):
         name = os.path.splitext(filename)[0]
         known_face_encodings.append(face_encodings[0])
         known_face_names.append(name)
-        
+
 def process_image(image, upscaling, threshold):
     unknown_image = face_recognition.load_image_file(image)
     face_locations = face_recognition.face_locations(unknown_image, number_of_times_to_upsample=upscaling)
@@ -46,6 +47,10 @@ def process_image(image, upscaling, threshold):
         cv2.putText(unknown_image, name, (left + 6, bottom + 13), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
 
     return cv2.cvtColor(unknown_image, cv2.COLOR_BGR2RGB)
+
+@app.route('/')
+def index():
+    return "This is the root path and it's working!"
 
 @app.route('/annotate_image', methods=['POST'])
 def annotate_image():
@@ -71,4 +76,4 @@ def annotate_image():
     return jsonify({'image': img_str})
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0')
