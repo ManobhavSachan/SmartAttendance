@@ -48,7 +48,7 @@ const SnapAttendance = () => {
 
   const uri = Constants?.expoConfig?.hostUri
   ? Constants.expoConfig.hostUri.split(`:`).shift().concat(`:5000`)
-  : `http://192.168.87.15:5000`;
+  : `http://192.168.151.66:5000`;
   console.log(uri);
   const processImage = async () => {
     if (image) {

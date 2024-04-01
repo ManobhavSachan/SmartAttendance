@@ -8,24 +8,38 @@ import cv2
 import base64
 from flask_cors import CORS
 
+# import subprocess
+# subprocess.run(["pip", "install", "pymongo"])
+
+from pymongo import MongoClient
+
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-# Assuming known_face_encodings and known_face_names are loaded somewhere
+# from pymongo.mongo_client import MongoClient
+# from pymongo.server_api import ServerApi
+# uri = "mongodb+srv://manobhavsachan:2L7nRCAWLHi6lE6T@cluster0.pzxvpp1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+# # Create a new client and connect to the server
+# client = MongoClient(uri, server_api=ServerApi('1'))
+# # Send a ping to confirm a successful connection
+# try:
+#     client.admin.command('ping')
+#     print("Pinged your deployment. You successfully connected to MongoDB!")
+# except Exception as e:
+#     print(e)
 
-folder_path = "C:/Users/DELL/Downloads/GitHub Photos/Single Photo"
+client = MongoClient('mongodb+srv://manobhavsachan:2L7nRCAWLHi6lE6T@cluster0.pzxvpp1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+db = client['SmartAttendance']
+collection = db['ECE']
+
+# Fetch all documents from the MongoDB collection
+cursor = collection.find({})
 known_face_encodings = []
 known_face_names = []
 
-for filename in os.listdir(folder_path):
-    image_path = os.path.join(folder_path, filename)
-    image = face_recognition.load_image_file(image_path)
-    face_encodings = face_recognition.face_encodings(image)
-
-    if len(face_encodings) > 0:
-        name = os.path.splitext(filename)[0]
-        known_face_encodings.append(face_encodings[0])
-        known_face_names.append(name)
+for document in cursor:
+    known_face_encodings.append(np.frombuffer(document['face_encoding']))
+    known_face_names.append(document['name'])
 
 def process_image(image, upscaling, threshold):
     unknown_image = face_recognition.load_image_file(image)
@@ -52,7 +66,46 @@ def process_image(image, upscaling, threshold):
 def index():
     return "This is the root path and it's working!"
 
-@app.route('/annotate_image', methods=['POST'])
+@app.route('/add_face', methods=['POST'])
+def upload_face_encoding():
+    if 'roll_no' not in request.form:
+        return jsonify({'error': 'Roll number not provided'}), 400
+    if 'name' not in request.form:
+        return jsonify({'error': 'Name not provided'}), 400
+    if 'image' not in request.files:
+        return "No image part"
+
+    image_file = request.files['image']
+
+    if image_file.filename == '':
+        return "No selected image file"
+
+    roll_no = request.form['roll_no']
+    name = request.form['name']
+
+    image = face_recognition.load_image_file(image_file)
+    face_encodings = face_recognition.face_encodings(image)
+
+    if not face_encodings:
+        return jsonify({'error': 'No face found in the provided image'}), 400
+
+    face_encoding_bytes = face_encodings[0].tobytes()
+
+    # Store face encoding in MongoDB
+    encoding_data = {
+        'roll_no': roll_no,
+        'name': name,
+        'face_encoding': face_encoding_bytes
+    }
+    collection.insert_one(encoding_data)
+
+    # Update known_face_encodings and known_face_names
+    known_face_encodings.append(np.frombuffer(face_encoding_bytes))
+    known_face_names.append(name)
+
+    return jsonify({'message': 'Face encoding uploaded successfully'}), 200
+
+@app.route('/take_attendance', methods=['POST'])
 def annotate_image():
     if 'image' not in request.files:
         return "No image part"
