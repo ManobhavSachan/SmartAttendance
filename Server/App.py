@@ -18,7 +18,7 @@ CORS(app)  # Enable CORS for all routes
 
 # from pymongo.mongo_client import MongoClient
 # from pymongo.server_api import ServerApi
-# uri = 
+# uri = "mongodb+srv://manobhavsachan:2L7nRCAWLHi6lE6T@cluster0.pzxvpp1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 # # Create a new client and connect to the server
 # client = MongoClient(uri, server_api=ServerApi('1'))
 # # Send a ping to confirm a successful connection
@@ -28,7 +28,7 @@ CORS(app)  # Enable CORS for all routes
 # except Exception as e:
 #     print(e)
 
-client = MongoClient('')
+client = MongoClient('mongodb+srv://manobhavsachan:2L7nRCAWLHi6lE6T@cluster0.pzxvpp1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
 db = client['SmartAttendance']
 collection = db['ECE']
 

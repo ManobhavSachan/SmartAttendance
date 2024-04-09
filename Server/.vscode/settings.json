@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/a60e4c3f-4f44-4967-8ffa-95bbce5b1865/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/attendify-backend-app",
+    "appService.deploySubpath": "."
+}
